@@ -1,5 +1,5 @@
 import pandas as pd
-import pandas_ta_classic as ta
+import pandas_ta as ta
 
 def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     """
