@@ -1,0 +1,20 @@
+import { useState } from "react";
+import { ArrowRight, Landmark, LockKeyhole } from "lucide-react";
+import { useAuth } from "../lib/auth";
+
+export default function Auth({ mode }: { mode: "signin" | "signup" }) {
+  const [fullName, setFullName] = useState(""); const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [error, setError] = useState(""); const [loading, setLoading] = useState(false);
+  const { refresh } = useAuth(); const register = mode === "signup";
+  async function submit(e: React.FormEvent) {
+    e.preventDefault(); setLoading(true); setError("");
+    try {
+      const response = await fetch(`/api/v1/auth/${register ? "register" : "login"}`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(register ? { full_name: fullName, email, password } : { email, password }) });
+      const body = await response.json(); if (!response.ok) throw new Error(body.detail || "Unable to continue."); await refresh(); window.location.hash = "/dashboard";
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to continue."); } finally { setLoading(false); }
+  }
+  return <main className="flex min-h-screen items-center justify-center bg-bg p-5"><section className="w-full max-w-[420px] rounded-[10px] border border-line bg-surface-1 p-6 shadow-2xl shadow-black/20"><div className="mb-8 flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-acc/15 text-acc"><Landmark size={20} /></span><div><div className="text-[15px] font-semibold text-txt-primary">QUANTX</div><div className="label-xs text-txt-muted">Institutional Finance Platform</div></div></div><div className="mb-6"><h1 className="text-[21px] font-semibold text-txt-primary">{register ? "Create your secure workspace" : "Welcome back"}</h1><p className="mt-1 text-[11.5px] text-txt-secondary">{register ? "Start with a protected quantitative research environment." : "Sign in to access your portfolio research workspace."}</p></div><form onSubmit={submit} className="space-y-4">{register ? <Field label="Full name" value={fullName} onChange={setFullName} autoComplete="name" /> : null}<Field label="Work email" type="email" value={email} onChange={setEmail} autoComplete="email" /><Field label="Password" type="password" value={password} onChange={setPassword} autoComplete={register ? "new-password" : "current-password"} hint={register ? "12+ characters, uppercase, lowercase, and number" : undefined} />{error ? <div className="rounded-[6px] border border-neg/30 bg-neg/10 px-3 py-2 text-[11px] text-neg">{error}</div> : null}<button disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-[6px] bg-acc px-3 py-2.5 text-[12px] font-semibold text-bg transition-opacity disabled:opacity-60">{loading ? "Please wait…" : register ? "Create account" : "Sign in"}<ArrowRight size={15} /></button></form><div className="mt-5 border-t border-line pt-4 text-center text-[11px] text-txt-secondary">{register ? "Already have an account?" : "New to QUANTX?"} <a href={register ? "#/signin" : "#/signup"} className="text-acc hover:underline">{register ? "Sign in" : "Create an account"}</a></div><div className="mt-6 flex items-center justify-center gap-1.5 text-[10px] text-txt-disabled"><LockKeyhole size={11} /> Session secured with HTTP-only cookies</div></section></main>;
+}
+
+function Field({ label, value, onChange, type = "text", autoComplete, hint }: { label: string; value: string; onChange: (v: string) => void; type?: string; autoComplete?: string; hint?: string }) {
+  return <label className="block"><span className="label-xs text-txt-muted">{label}</span><input required type={type} autoComplete={autoComplete} value={value} onChange={e => onChange(e.target.value)} className="mt-1.5 w-full rounded-[6px] border border-line bg-surface-2 px-3 py-2.5 text-[12px] text-txt-primary outline-none focus:border-acc" />{hint ? <span className="mt-1 block text-[10px] text-txt-disabled">{hint}</span> : null}</label>;
+}
