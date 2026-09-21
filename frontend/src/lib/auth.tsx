@@ -15,13 +15,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
   const [loading, setLoading] = useState(false);
 
+const getBaseUrl = (): string => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (typeof window !== "undefined") {
+    if (window.location.port === "5173") return "";
+    return `${window.location.protocol}//${window.location.hostname}:8001`;
+  }
+  return "http://127.0.0.1:8001";
+};
+
   const refresh = useCallback(async () => {
     try {
       const token = localStorage.getItem("quantx_token");
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
-      const r = await fetch("/api/v1/auth/me", { credentials: "include", headers });
-      if (r.ok) {
+      const baseUrl = getBaseUrl();
+      const r = await fetch(`${baseUrl}/api/v1/auth/me`, { credentials: "include", headers });
+      const contentType = r.headers.get("content-type") || "";
+      if (r.ok && contentType.includes("application/json")) {
         const data = await r.json();
         if (data.user) {
           setUser(data.user);
@@ -58,7 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const token = localStorage.getItem("quantx_token");
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
-      await fetch("/api/v1/auth/logout", { method: "POST", credentials: "include", headers });
+      const baseUrl = getBaseUrl();
+      await fetch(`${baseUrl}/api/v1/auth/logout`, { method: "POST", credentials: "include", headers });
     } catch {}
     try {
       localStorage.removeItem("quantx_user");
