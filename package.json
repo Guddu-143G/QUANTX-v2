@@ -1,0 +1,11 @@
+{
+  "name": "quantx-platform",
+  "private": true,
+  "version": "40.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "cd frontend && npm run dev",
+    "preview": "cd frontend && npm run preview"
+  }
+}
