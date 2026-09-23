@@ -40,8 +40,8 @@ import OmniV37Studio from "./pages/OmniV37Studio";
 import OmniV38Studio from "./pages/OmniV38Studio";
 import OmniV39Studio from "./pages/OmniV39Studio";
 import OmniV40Studio from "./pages/OmniV40Studio";
-
-
+import OmniV41Studio from "./pages/OmniV41Studio";
+import { QuantXErrorBoundary } from "./components/common/ErrorBoundary";
 
 function NotFound({ path }: { path: string }) {
   return (
@@ -106,6 +106,7 @@ function Routes() {
   else if (path === "/omni-v38") page = <OmniV38Studio />;
   else if (path === "/omni-v39") page = <OmniV39Studio />;
   else if (path === "/omni-v40") page = <OmniV40Studio />;
+  else if (path === "/omni-v41") page = <OmniV41Studio />;
 
   else if (path === "/data") page = <DataCenter />;
   else if (path === "/copilot") page = <Copilot />;
@@ -118,7 +119,9 @@ function Routes() {
 
   return (
     <AppShell>
-      <div key={path} className="anim-fade">{page}</div>
+      <QuantXErrorBoundary fallbackTitle="QuantX Global Workspace Notice">
+        <div key={path} className="anim-fade">{page}</div>
+      </QuantXErrorBoundary>
     </AppShell>
   );
 }

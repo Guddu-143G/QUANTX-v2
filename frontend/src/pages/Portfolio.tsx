@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, Fragment } from "react";
 import {
   Download,
   Scale,
@@ -35,8 +35,11 @@ import {
   Panel,
   Skeleton,
   TableSkeleton,
+  SkeletonLoader,
   useToast,
 } from "../components/ui";
+import { QuantXErrorBoundary } from "../components/common/ErrorBoundary";
+import { useIsMounted } from "../hooks/useIsMounted";
 import { TickerCell } from "../components/finance";
 import { inrCompact, num } from "../lib/format";
 import { cn } from "../utils/cn";
@@ -68,6 +71,7 @@ type TabId = (typeof TABS)[number]["id"];
 export default function Portfolio() {
   const { navigate } = useRouter();
   const { push } = useToast();
+  const isMounted = useIsMounted();
 
   const [activeTab, setActiveTab] = useState<TabId>("holdings");
   const [loading, setLoading] = useState(true);
@@ -332,7 +336,7 @@ export default function Portfolio() {
   const estimatedGst = txAction.startsWith("CASH") ? 0 : Math.round((estimatedBrokerage + estimatedTurnover) * 0.18 * 100) / 100;
   const estimatedTotalFees = estimatedStt + estimatedBrokerage + estimatedTurnover + estimatedGst;
 
-  const isZeroState = summary?.is_zero_state || (summary?.holdings?.length === 0 && transactions.length === 0);
+  const isZeroState = !summary || summary.is_zero_state || ((summary.holdings?.length ?? 0) === 0 && transactions.length === 0);
 
   const downloadAuditStatement = () => {
     const data = {
@@ -362,8 +366,12 @@ export default function Portfolio() {
     });
   };
 
+  if (!isMounted) {
+    return <SkeletonLoader height="600px" title="Hydrating Institutional Portfolio Engine..." subtitle="Preventing SSR hydration mismatch and initializing stateless memory ledger" />;
+  }
+
   return (
-    <>
+    <QuantXErrorBoundary fallbackTitle="Institutional Portfolio Ledger Runtime Notice">
       <PageHeader
         title="Institutional Portfolio Ledger"
         meta={
@@ -443,6 +451,14 @@ export default function Portfolio() {
               onClick={() => navigate("/sovereign-v34")}
             >
               Sovereign DNA & Quantum (v34)
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              icon={ShieldCheck}
+              onClick={() => navigate("/omni-v41")}
+            >
+              Resilience (v41)
             </Button>
             <Button
               size="sm"
@@ -552,6 +568,13 @@ export default function Portfolio() {
               </Button>
               <Button
                 variant="outline"
+                icon={Download}
+                onClick={() => navigate("/portfolio/analysis")}
+              >
+                Upload Holdings CSV
+              </Button>
+              <Button
+                variant="outline"
                 icon={Plus}
                 onClick={() => setShowTxModal(true)}
               >
@@ -642,7 +665,7 @@ export default function Portfolio() {
                     const isProfitable = h.unrealized_pnl >= 0;
 
                     return (
-                      <React.Fragment key={h.ticker}>
+                      <Fragment key={h.ticker}>
                         <tr
                           className={cn(
                             "cursor-pointer transition-colors hover:bg-surface/40",
@@ -778,7 +801,7 @@ export default function Portfolio() {
                             </td>
                           </tr>
                         )}
-                      </React.Fragment>
+                      </Fragment>
                     );
                   })}
                 </tbody>
@@ -1562,7 +1585,7 @@ export default function Portfolio() {
           </div>
         </div>
       )}
-    </>
+    </QuantXErrorBoundary>
   );
 }
 

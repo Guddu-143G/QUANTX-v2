@@ -86,6 +86,7 @@ export const ROUTE_TITLES: Record<string, string[]> = {
   "/omni-v38": ["Workspace", "Omni-Singularity & TQFT", "Topological Field Theory, 100k+ Qubit QUBO, Wetware DNA & zk-HMSCG"],
   "/omni-v39": ["Workspace", "Omni-Singularity & QTSFT", "Calabi-Yau Mirror, Wetware Organoid, zk-MCSRM & Constitutional AI"],
   "/omni-v40": ["Workspace", "Omni-Singularity & Multiverse", "11D String Multiverse, IIT 4.0 Φ-Core, ZPE QPU & zk-TSCCM"],
+  "/omni-v41": ["Workspace", "Deployment Resilience & Web Worker Studio (v41)", "Stateless RAM Ingestion (io.BytesIO), Web Worker Slicing, Error Boundaries & Fail-Safe Telemetry"],
   "/data": ["Workspace", "Data Quality Center"],
   "/copilot": ["Workspace", "Quant Copilot"],
   "/alerts": ["System", "Alerts"],
@@ -116,6 +117,7 @@ export const COMMANDS: Command[] = [
   { id: "c-v38", label: "Open Omni-Singularity TQFT, 100k+ Qubit Annealer & zk-HMSCG Studio (v38)", group: "Navigation", to: "/omni-v38", icon: Compass, keywords: "v38 omni singularity tqft chern-simons gauge manifold qubo quantum transmon annealer dna wetware organoid zk-hmscg fhe-ckks halo2 sebi sec esma mas" },
   { id: "c-v39", label: "Open Omni-Singularity QTSFT, Wetware Organoid & zk-MCSRM Studio (v39)", group: "Navigation", to: "/omni-v39", icon: Scale, keywords: "v39 omni singularity qtsft calabi-yau mirror symmetry wetware organoid mea stdp zk-mcsrm ml-kem ml-dsa lean4 z3 smt constitutional ai p-breach" },
   { id: "c-v40", label: "Open Omni-Singularity String Multiverse, Φ-Core & ZPE Studio (v40)", group: "Navigation", to: "/omni-v40", icon: Atom, keywords: "v40 omni singularity string multiverse 11d m-theory non-commutative phi-core iit 4.0 zpe casimir photonic attosecond zk-tsccm sebi sec esma bis" },
+  { id: "c-v41", label: "Open Deployment Resilience & Web Worker Studio (v41)", group: "Navigation", to: "/omni-v41", icon: ShieldCheck, keywords: "v41 deployment resilience stateless ram bytesio web worker var monte carlo error boundary zero-state vercel lambda" },
 
 
 

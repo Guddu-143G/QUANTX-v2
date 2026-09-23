@@ -30,12 +30,18 @@ import type { Scenario } from "../data/quant";
 import { HOLDINGS } from "../data/portfolio";
 import { inrCompact, num } from "../lib/format";
 import { cn } from "../utils/cn";
+import { useIsMounted } from "../hooks/useIsMounted";
+import { QuantXErrorBoundary } from "../components/common/ErrorBoundary";
+import { SkeletonLoader } from "../components/ui/SkeletonLoader";
+import { useRiskWorker } from "../hooks/useRiskWorker";
 
 
 const HORIZONS = ["1D", "5D", "10D", "1M"] as const;
 const METHODS = ["Historical", "Parametric", "Monte Carlo"] as const;
 
 export default function Risk() {
+  const isMounted = useIsMounted();
+  const riskWorker = useRiskWorker();
   const [horizon, setHorizon] = useState<(typeof HORIZONS)[number]>("1D");
   const [method, setMethod] = useState<(typeof METHODS)[number]>("Historical");
   const [selected, setSelected] = useState<string>("crash");
@@ -1201,8 +1207,12 @@ export default function Risk() {
 
   const maxVar = topVar[0]?.varContrib ?? 1;
 
+  if (!isMounted) {
+    return <SkeletonLoader height="700px" title="Hydrating Institutional Risk Command Center..." subtitle="Initializing live risk limits, factor models, and Web Worker offloader" />;
+  }
+
   return (
-    <>
+    <QuantXErrorBoundary fallbackTitle="Institutional Risk Module Runtime Exception">
       <PageHeader
         title="Risk Command Center"
         sub="Firm-wide exposure, factor risk decomposition, limit surveillance and scenario analysis. All figures marked at 15:30 IST."
@@ -1217,12 +1227,14 @@ export default function Risk() {
             <Badge tone={isLive ? "pos" : "gold"} dot={isLive}>
               {isLive ? "LIVE SURVEILLANCE" : "SIMULATED DATA"}
             </Badge>
+            <Badge tone="purple">v41 RESILIENT HYDRATION</Badge>
           </>
         }
         actions={
           <>
             <SegmentedControl options={HORIZONS} value={horizon} onChange={setHorizon} ariaLabel="Risk horizon" />
             <SegmentedControl options={METHODS} value={method} onChange={setMethod} ariaLabel="VaR method" size="xs" />
+            <Button size="sm" variant="outline" icon={ShieldCheck} onClick={() => window.location.href = "/omni-v41"}>v41 Resilience</Button>
             <Button size="sm" variant="ghost" icon={Download} onClick={downloadRiskReport}>Risk report</Button>
           </>
         }
@@ -1410,7 +1422,7 @@ export default function Risk() {
             <>
               <StackedBar items={decomp.data} height={16} />
               <ul className="mt-3.5 space-y-2.5">
-                {decomp.data.map((d) => (
+                {(decomp.data || []).map((d) => (
                   <li key={d.name}>
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="flex items-center gap-1.5 text-[11.5px] text-txt-secondary">
@@ -1433,7 +1445,7 @@ export default function Risk() {
 
         <Panel level={3} className="xl:col-span-7" title="Factor Risk Contribution" sub="Marginal contribution to volatility by risk factor">
           {factor.loading || !factor.data ? <ChartSkeleton height={230} /> : (
-            <WaterfallChart data={factor.data.map((f) => ({ name: f.name, value: f.contrib }))} height={230} />
+            <WaterfallChart data={(factor.data || []).map((f) => ({ name: f.name, value: f.contrib }))} height={230} />
           )}
           <div className="mt-2 grid grid-cols-2 gap-3 border-t border-line-subtle pt-3 sm:grid-cols-4">
             <StatCell k="Total σ (ann.)" v="10.8%" />
@@ -1454,7 +1466,7 @@ export default function Risk() {
             <ul>
               {scenarios.loading || !scenarios.data
                 ? Array.from({ length: 6 }).map((_, i) => <li key={i} className="px-3 py-2"><Skeleton className="h-8" /></li>)
-                : scenarios.data.map((s) => (
+                : (scenarios.data || []).map((s) => (
                     <li key={s.key}>
                       <button onClick={() => setSelected(s.key)}
                         className={cn(
@@ -1503,7 +1515,7 @@ export default function Risk() {
                   <div>
                     <div className="mb-2 label-xs text-txt-disabled">Sector impact</div>
                     <ul className="space-y-2">
-                      {sc.sectors.map((s) => (
+                      {(sc?.sectors || []).map((s) => (
                         <li key={s.s}>
                           <div className="flex items-baseline justify-between gap-2">
                             <span className="text-[11.5px] text-txt-secondary">{s.s}</span>
@@ -1521,7 +1533,7 @@ export default function Risk() {
                     <div className="mb-2 label-xs text-txt-disabled">Simulated NAV path under shock</div>
                     {perf.data ? (
                       <MiniArea
-                        data={perf.data.slice(-60).map((p, i) => ({ d: p.d, v: +(p.portfolio * (1 + (sc.impactPct / 100) * Math.min(1, i / 22))).toFixed(2) }))}
+                        data={perf.data.slice(-60).map((p, i) => ({ d: p.d, v: +(p.portfolio * (1 + ((sc?.impactPct || 0) / 100) * Math.min(1, i / 22))).toFixed(2) }))}
                         color="#FF5C6C" height={162}
                       />
                     ) : <ChartSkeleton height={162} />}
@@ -4054,7 +4066,7 @@ export default function Risk() {
         </div>
         <span className="flex items-center gap-1.5 label-xs text-txt-disabled"><Activity size={11} /> Streaming</span>
       </div>
-    </>
+    </QuantXErrorBoundary>
   );
 }
 

@@ -545,3 +545,5 @@ export function useReveal<T extends HTMLElement>() {
   }, []);
   return ref;
 }
+
+export { SkeletonLoader } from "./SkeletonLoader";

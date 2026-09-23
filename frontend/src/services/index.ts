@@ -11,14 +11,17 @@ import {
   corrMatrix, monthlyReturns, TRADE_DIST, CORR_TICKERS,
 } from "../data/quant";
 
+import { buildApiUrl } from "../config/api";
+
 const LATENCY = 260;
+
 const defer = <T,>(v: T, ms = LATENCY): Promise<T> => new Promise((r) => setTimeout(() => r(v), ms));
 
 export const marketService = {
   indices: () => defer(INDICES, 120),
   assets: async () => {
     try {
-      const res = await fetch("/api/v1/integrations/zerodha/ticks");
+      const res = await fetch(buildApiUrl("/api/v1/integrations/zerodha/ticks"));
       if (res.ok) {
         const data = await res.json();
         if (data.ticks) {
@@ -53,7 +56,7 @@ export const marketService = {
 export const portfolioService = {
   nav: async () => {
     try {
-      const res = await fetch("/api/v1/portfolio/ledger/summary");
+      const res = await fetch(buildApiUrl("/api/v1/portfolio/ledger/summary"));
       if (res.ok) {
         const d = await res.json();
         if (d.total_aum) return d.total_aum;
@@ -63,7 +66,7 @@ export const portfolioService = {
   },
   kpis: async () => {
     try {
-      const res = await fetch("/api/v1/portfolio/ledger/summary");
+      const res = await fetch(buildApiUrl("/api/v1/portfolio/ledger/summary"));
       if (res.ok) {
         const d = await res.json();
         const navVal = d.total_aum || NAV;
@@ -95,7 +98,7 @@ export const portfolioService = {
   },
   holdings: async () => {
     try {
-      const res = await fetch("/api/v1/portfolio/ledger/summary");
+      const res = await fetch(buildApiUrl("/api/v1/portfolio/ledger/summary"));
       if (res.ok) {
         const d = await res.json();
         if (d.holdings && d.holdings.length > 0) {
@@ -130,13 +133,13 @@ export const portfolioService = {
 export const riskService = {
   metrics: async (horizon: string = "1D", method: string = "Historical") => {
     try {
-      const res = await fetch(`/api/v1/risk/metrics?horizon=${encodeURIComponent(horizon)}&method=${encodeURIComponent(method)}`);
+      const res = await fetch(buildApiUrl(`/api/v1/risk/metrics?horizon=${encodeURIComponent(horizon)}&method=${encodeURIComponent(method)}`));
       if (res.ok) {
         return await res.json();
       }
     } catch {}
     try {
-      const res = await fetch("/api/v1/portfolio/ledger/summary");
+      const res = await fetch(buildApiUrl("/api/v1/portfolio/ledger/summary"));
       if (res.ok) {
         const summary = await res.json();
         const nav = summary.total_aum || 104218420;
@@ -160,28 +163,28 @@ export const riskService = {
   },
   decomposition: async () => {
     try {
-      const res = await fetch("/api/v1/risk/decomposition");
+      const res = await fetch(buildApiUrl("/api/v1/risk/decomposition"));
       if (res.ok) return await res.json();
     } catch {}
     return defer(RISK_DECOMP);
   },
   factorRisk: async () => {
     try {
-      const res = await fetch("/api/v1/risk/factor-risk");
+      const res = await fetch(buildApiUrl("/api/v1/risk/factor-risk"));
       if (res.ok) return await res.json();
     } catch {}
     return defer(FACTOR_RISK);
   },
   scenarios: async () => {
     try {
-      const res = await fetch("/api/v1/risk/scenarios");
+      const res = await fetch(buildApiUrl("/api/v1/risk/scenarios"));
       if (res.ok) return await res.json();
     } catch {}
     return defer(SCENARIOS);
   },
   runScenario: async (scenarioKey: string = "crash") => {
     try {
-      const res = await fetch("/api/v1/risk/run-scenario", {
+      const res = await fetch(buildApiUrl("/api/v1/risk/run-scenario"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scenario_key: scenarioKey }),
@@ -192,11 +195,11 @@ export const riskService = {
   },
   limits: async () => {
     try {
-      const res = await fetch("/api/v1/risk/limits");
+      const res = await fetch(buildApiUrl("/api/v1/risk/limits"));
       if (res.ok) return await res.json();
     } catch {}
     try {
-      const res = await fetch("/api/v1/portfolio/ledger/summary");
+      const res = await fetch(buildApiUrl("/api/v1/portfolio/ledger/summary"));
       if (res.ok) {
         const summary = await res.json();
         const holdings = summary.holdings || [];
@@ -215,14 +218,14 @@ export const riskService = {
   },
   topContributors: async () => {
     try {
-      const res = await fetch("/api/v1/risk/top-contributors");
+      const res = await fetch(buildApiUrl("/api/v1/risk/top-contributors"));
       if (res.ok) return await res.json();
     } catch {}
     return null;
   },
   correlation: async () => {
     try {
-      const res = await fetch("/api/v1/risk/correlation");
+      const res = await fetch(buildApiUrl("/api/v1/risk/correlation"));
       if (res.ok) return await res.json();
     } catch {}
     return defer({ tickers: CORR_TICKERS, matrix: corrMatrix() });
@@ -532,6 +535,7 @@ export * from "./v17";
 export * from "./v18";
 export * from "./v19";
 export * from "./v20";
+export * from "./v41";
 
 // Disambiguate multi-version type exports
 export type { MacroConditioningVector } from "./v15";
